@@ -1,0 +1,8 @@
+# Reception Voice Assistant — Dependencies
+# Install with: pip install -r requirements.txt
+
+SpeechRecognition>=3.10.0
+sounddevice>=0.4.6
+numpy>=1.24.0
+google-generativeai>=0.7.0
+pywin32>=306
