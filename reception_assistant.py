@@ -27,8 +27,12 @@ from difflib import SequenceMatcher
 # ─────────────────────────────────────────────
 # CONFIG — Edit these before running
 # ─────────────────────────────────────────────
-GEMINI_API_KEY = "API KEY"   # Get free key at https://aistudio.google.com
-OFFICE_NAME    = "Karan's Office"                   # Your office/company name
+
+with open("APIKEY.txt","r") as src:
+    GEMINI_API_KEY = src.readline()
+
+
+OFFICE_NAME    = "Karan's Office"              # Your office/company name
 ASSISTANT_NAME = "Aria"                        # Assistant's name
 DB_PATH        = "reception_data.db"           # SQLite DB file path
 SIMILARITY_THRESHOLD = 0.55                    # How close a question must match (0.0–1.0)
