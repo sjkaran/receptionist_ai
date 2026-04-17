@@ -16,7 +16,7 @@ import numpy as np
 import pythoncom
 import win32com.client
 import threading
-import google.generativeai as genai
+from google import genai
 import json
 import os
 import re
@@ -27,9 +27,12 @@ from difflib import SequenceMatcher
 # ─────────────────────────────────────────────
 # CONFIG — Edit these before running
 # ─────────────────────────────────────────────
+if os.path.exists("APIKEY.txt"):
+    with open("APIKEY.txt","r") as src:
+        GEMINI_API_KEY = src.read().strip()
+else:
+    GEMINI_API_KEY = os.gentenv("GEMINI_API_KEY","")
 
-with open("APIKEY.txt","r") as src:
-    GEMINI_API_KEY = src.readline()
 
 
 OFFICE_NAME    = "Karan's Office"              # Your office/company name
@@ -298,39 +301,48 @@ def find_best_answer(user_question: str):
 # ─────────────────────────────────────────────
 # GEMINI AI FALLBACK
 # ─────────────────────────────────────────────
-_gemini_model = None
+_client = None
 
 def get_gemini():
-    global _gemini_model
-    if _gemini_model is None:
-        genai.configure(api_key=GEMINI_API_KEY)
-        _gemini_model = genai.GenerativeModel("gemini-1.5-flash")  # Free tier model
-    return _gemini_model
+    global _client
+    if _client is None:
+        if not GEMINI_API_KEY:
+            print("❌ Error: APIKEY.txt is missing or empty.")
+            return None
+        
+        # Explicitly set vertexai=False to avoid 401 errors
+        _client = genai.Client(api_key=GEMINI_API_KEY, vertexai=False)
+    return _client
 
 
 def ask_gemini(user_question: str, conversation_history: list) -> str:
-    """Ask Gemini AI and return response text."""
     try:
-        model = get_gemini()
+        client = get_gemini()
+        if not client: return "System error: AI not configured."
+
         system_context = f"""You are {ASSISTANT_NAME}, a professional and friendly voice receptionist at {OFFICE_NAME}.
 Your job is to assist visitors and callers politely and helpfully.
 Keep responses concise (2–3 sentences max) as they will be spoken aloud.
 Do not use bullet points, markdown, or special characters.
 Be warm, professional, and helpful."""
-
-        # Build conversation string for context
+        
+        # Format history for the new SDK
         history_text = ""
-        for entry in conversation_history[-6:]:  # last 3 exchanges
+        for entry in conversation_history[-6:]:
             history_text += f"Visitor: {entry['user']}\nAria: {entry['assistant']}\n"
 
-        full_prompt = f"{system_context}\n\nConversation so far:\n{history_text}\nVisitor: {user_question}\n{ASSISTANT_NAME}:"
-        response = model.generate_content(full_prompt)
+        full_prompt = f"{system_context}\n\nRecent context:\n{history_text}\nVisitor: {user_question}\n{ASSISTANT_NAME}:"
+        
+        # Use a 2026 stable model
+        response = client.models.generate_content(
+            model="gemini-2.0-flash", # Use 2.0 or 1.5-flash
+            contents=full_prompt
+        )
         return response.text.strip()
     except Exception as e:
-        print(f"   [Gemini error: {e}]")
-        return f"I'm sorry, I'm having trouble processing that right now. Please speak to our team directly for assistance."
-
-
+        # This will now show the actual error if it still fails
+        print(f"   [Gemini SDK error: {e}]")
+        return "I'm having trouble connecting to the network. Please wait a moment."
 # ─────────────────────────────────────────────
 # TRAINING MODE
 # ─────────────────────────────────────────────
