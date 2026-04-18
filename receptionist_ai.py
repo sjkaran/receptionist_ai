@@ -16,7 +16,7 @@ import numpy as np
 import pythoncom
 import win32com.client
 import threading
-import google.generativeai as genai   # ← correct package: google-generativeai (API key auth)
+# import google.generativeai as genai   # ← correct package: google-generativeai (API key auth)
 import json
 import os
 import re
@@ -272,51 +272,92 @@ def find_best_answer(user_question: str):
 # ─────────────────────────────────────────────
 # GEMINI AI FALLBACK
 # ─────────────────────────────────────────────
-_gemini_model = None
+# _gemini_model = None
 
-def get_gemini():
-    global _gemini_model
-    if _gemini_model is None:
-        if not GEMINI_API_KEY:
-            print("❌  Error: No Gemini API key found.")
-            print("    → Create APIKEY.txt with your key, or set GEMINI_API_KEY env variable.")
-            print("    → Get a free key at: https://aistudio.google.com")
-            return None
-        genai.configure(api_key=GEMINI_API_KEY)   # ← correct: configure with API key
-        _gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-    return _gemini_model
+# def get_gemini():
+#     global _gemini_model
+#     if _gemini_model is None:
+#         if not GEMINI_API_KEY:
+#             print("❌  Error: No Gemini API key found.")
+#             print("    → Create APIKEY.txt with your key, or set GEMINI_API_KEY env variable.")
+#             print("    → Get a free key at: https://aistudio.google.com")
+#             return None
+#         genai.configure(api_key=GEMINI_API_KEY)   # ← correct: configure with API key
+#         _gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+#     return _gemini_model
 
 
-def ask_gemini(user_question: str, conversation_history: list) -> str:
-    try:
-        model = get_gemini()
-        if not model:
-            return "I'm sorry, the AI system is not configured. Please speak to a staff member directly."
+# def ask_gemini(user_question: str, conversation_history: list) -> str:
+#     try:
+#         model = get_gemini()
+#         if not model:
+#             return "I'm sorry, the AI system is not configured. Please speak to a staff member directly."
 
-        system_context = f"""You are {ASSISTANT_NAME}, a professional and friendly voice receptionist at {OFFICE_NAME}.
-Your job is to assist visitors and callers politely and helpfully.
-Keep responses concise (2-3 sentences max) as they will be spoken aloud.
-Do not use bullet points, markdown, or special characters.
-Be warm, professional, and helpful."""
+#         system_context = f"""You are {ASSISTANT_NAME}, a professional and friendly voice receptionist at {OFFICE_NAME}.
+# Your job is to assist visitors and callers politely and helpfully.
+# Keep responses concise (2-3 sentences max) as they will be spoken aloud.
+# Do not use bullet points, markdown, or special characters.
+# Be warm, professional, and helpful."""
 
-        history_text = ""
-        for entry in conversation_history[-6:]:
-            history_text += f"Visitor: {entry['user']}\n{ASSISTANT_NAME}: {entry['assistant']}\n"
+#         history_text = ""
+#         for entry in conversation_history[-6:]:
+#             history_text += f"Visitor: {entry['user']}\n{ASSISTANT_NAME}: {entry['assistant']}\n"
 
-        full_prompt = (
-            f"{system_context}\n\n"
-            f"Recent conversation:\n{history_text}"
-            f"Visitor: {user_question}\n"
-            f"{ASSISTANT_NAME}:"
+#         full_prompt = (
+#             f"{system_context}\n\n"
+#             f"Recent conversation:\n{history_text}"
+#             f"Visitor: {user_question}\n"
+#             f"{ASSISTANT_NAME}:"
+#         )
+
+#         response = model.generate_content(full_prompt)
+#         return response.text.strip()
+
+#     except Exception as e:
+#         print(f"   [Gemini error: {e}]")
+        # return "I'm sorry, I'm having trouble processing that right now. Please speak to our team directly."
+
+def ask_gemini(user_input, chat_history_ids):
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+    import torch
+
+    tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-small")
+    model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-small")
+        
+    # Add EOS token if not present
+    if tokenizer.eos_token is None:
+        tokenizer.eos_token = tokenizer.pad_token
+
+    chat_history_ids = None
+
+    while True:
+
+        # Encode user input
+        new_user_input_ids = tokenizer.encode(user_input + tokenizer.eos_token, return_tensors='pt')
+
+        # Append to chat history
+        if chat_history_ids is not None:
+            bot_input_ids = torch.cat([chat_history_ids, new_user_input_ids], dim=-1)
+        else:
+            bot_input_ids = new_user_input_ids
+
+        # Generate response
+        chat_history_ids = model.generate(
+            bot_input_ids,
+            max_length=1000,
+            pad_token_id=tokenizer.eos_token_id,
+            no_repeat_ngram_size=3,
+            do_sample=True,
+            top_k=100,
+            top_p=0.7,
+            temperature=0.8
         )
 
-        response = model.generate_content(full_prompt)
-        return response.text.strip()
+        # Decode response
+        response = tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
+        return f"Model output:  {response}"
 
-    except Exception as e:
-        print(f"   [Gemini error: {e}]")
-        return "I'm sorry, I'm having trouble processing that right now. Please speak to our team directly."
-
+chat_history_ids = None
 
 # ─────────────────────────────────────────────
 # TRAINING MODE

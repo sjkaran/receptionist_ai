@@ -35,7 +35,7 @@ else:
 
 
 
-OFFICE_NAME    = "Karan's Office"              # Your office/company name
+OFFICE_NAME    = "The Office"              # Your office/company name
 ASSISTANT_NAME = "Aria"                        # Assistant's name
 DB_PATH        = "reception_data.db"           # SQLite DB file path
 SIMILARITY_THRESHOLD = 0.55                    # How close a question must match (0.0–1.0)
