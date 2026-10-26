@@ -1,0 +1,15 @@
+{
+  "office_name": "Karan's Office",
+  "assistant_name": "Aria",
+  "office_info": "",
+  "ollama_url": "http://localhost:11434",
+  "ollama_model": "mistral",
+  "ollama_timeout": 90,
+  "similarity_threshold": 0.55,
+  "voice_hint": "zira,hazel,female",
+  "speech_rate": 1,
+  "silence_rms": 500,
+  "listen_timeout": 10,
+  "phrase_limit": 20,
+  "trainer_pin": "pass"
+}

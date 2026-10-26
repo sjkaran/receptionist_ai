@@ -1,12 +1,7 @@
-# Reception Voice Assistant — Dependencies
-# Install with: pip install -r requirements.txt
-
-SpeechRecognition>=3.10.0
+fastapi>=0.110
+uvicorn>=0.29
+requests>=2.31
+SpeechRecognition>=3.10
 sounddevice>=0.4.6
-numpy>=1.24.0
-google-genai
-pywin32>=306
-transformers>=4.0.0
-torch>=2.0.0
-accelerate
-anthropic
+numpy>=1.26
+pywin32>=306; sys_platform == "win32"
