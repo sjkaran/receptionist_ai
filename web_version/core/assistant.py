@@ -2,12 +2,12 @@
 import threading
 import time
 
-from config import settings
-from core import database as db
-from core.llm import LLMError, OllamaClient
-from core.matcher import find_best_answer
-from core.stt import STTError, listen
-from core.tts import VoiceEngine
+from web_version.config import settings
+from web_version.core import database as db
+from web_version.core.llm import LLMError, OllamaClient
+from web_version.core.matcher import find_best_answer
+from web_version.core.stt import STTError, listen
+from web_version.core.tts import VoiceEngine
 
 EXIT_PHRASES = ("exit reception", "quit assistant", "stop assistant")
 FALLBACK_REPLY = "I'm sorry, I'm having trouble with that right now. Please speak to our team directly."

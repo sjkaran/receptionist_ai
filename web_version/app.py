@@ -4,7 +4,7 @@ import webbrowser
 
 import uvicorn
 
-from core import database as db
+from web_version.core import database as db
 
 HOST, PORT = "127.0.0.1", 8000
 

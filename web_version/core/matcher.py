@@ -1,7 +1,7 @@
 """Fuzzy matching of visitor questions against trained Q&A (same mechanism as the original)."""
 from difflib import SequenceMatcher
 
-from core import database as db
+from web_version.core import database as db
 
 
 def similarity(a: str, b: str) -> float:

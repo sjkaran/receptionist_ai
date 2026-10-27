@@ -2,7 +2,7 @@
 import sqlite3
 from contextlib import contextmanager
 
-from config import DB_PATH
+from web_version.config import DB_PATH
 
 
 @contextmanager

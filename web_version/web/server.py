@@ -7,11 +7,11 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from config import DEFAULTS, settings
-from core import database as db
-from core.assistant import assistant
-from core.stt import STTError
-from core.tts import HAVE_SAPI
+from web_version.config import DEFAULTS, settings
+from web_version.core import database as db
+from web_version.core.assistant import assistant
+from web_version.core.stt import STTError
+from web_version.core.tts import HAVE_SAPI
 
 STATIC = Path(__file__).parent / "static"
 app = FastAPI(title="Reception Assistant")

@@ -1,0 +1,6 @@
+# tkinter ships with the python.org installer (nothing to install).
+# The Ollama client uses only the standard library.
+numpy>=1.24
+SpeechRecognition>=3.10
+sounddevice>=0.4.6
+pywin32>=306; sys_platform == "win32"
