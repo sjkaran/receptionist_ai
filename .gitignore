@@ -1,8 +1,0 @@
-APIKEY.txt
-*.db
-try.py
-/__pycache__
-/old_test_version
-/data
-*.json
-/.venv
